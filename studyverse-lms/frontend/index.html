@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudyVerse — Student LMS</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>" />
+</head>
+<body>
+
+<!-- ===================== TOAST CONTAINER ===================== -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ===================== AUTH PAGES ===================== -->
+
+<!-- LOGIN PAGE -->
+<div id="page-login" class="page active" style="flex-direction:column;">
+  <div class="auth-page">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="auth-logo-icon">📚</div>
+        <span class="auth-logo-text">StudyVerse</span>
+      </div>
+      <h1 class="auth-title">Welcome back</h1>
+      <p class="auth-subtitle">Sign in to continue your learning streak</p>
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label">Email or USN</label>
+          <input type="text" class="form-input" id="loginEmail" placeholder="you@college.edu or 1RV23CS001" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required />
+        </div>
+        <div id="loginError" class="form-error"></div>
+        <button type="submit" class="btn btn-primary btn-full btn-lg mt-4" id="loginBtn">
+          Sign In
+        </button>
+      </form>
+      <div class="separator"></div>
+      <div class="flex items-center justify-between">
+        <span class="text-sm text-muted">Use your college email or USN</span>
+        <a href="/admin" style="font-size:.82rem;color:var(--accent-text)">Admin Panel →</a>
+      </div>
+      <div class="flex items-center justify-between mt-2">
+        <span class="text-sm text-muted">Forgot password?</span>
+        <button class="btn btn-ghost btn-sm" onclick="showPage('forgot')">Reset it</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- SET PASSWORD PAGE (first login) -->
+<div id="page-set-password" class="page" style="flex-direction:column;">
+  <div class="auth-page">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="auth-logo-icon">📚</div>
+        <span class="auth-logo-text">StudyVerse</span>
+      </div>
+      <h1 class="auth-title">Set Your Password</h1>
+      <p class="auth-subtitle">Welcome! Please create your own password before accessing your dashboard.</p>
+      <form onsubmit="handleSetPassword(event)" style="margin-top:20px">
+        <div class="form-group">
+          <label class="form-label">New Password</label>
+          <div style="position:relative">
+            <input type="password" class="form-input" id="spNewPassword" placeholder="Min. 8 characters" oninput="checkPasswordStrength(this.value)" required style="padding-right:40px"/>
+            <button type="button" onclick="togglePwVisibility('spNewPassword',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:.9rem">👁️</button>
+          </div>
+          <!-- Strength bar -->
+          <div style="margin-top:6px">
+            <div style="height:5px;background:var(--bg3);border-radius:99px;overflow:hidden">
+              <div id="pw-strength-bar" style="height:100%;width:0%;border-radius:99px;transition:all .3s ease"></div>
+            </div>
+            <span id="pw-strength-label" style="font-size:.72rem;font-weight:600"></span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm Password</label>
+          <div style="position:relative">
+            <input type="password" class="form-input" id="spConfirmPassword" placeholder="Repeat password" required style="padding-right:40px"/>
+            <button type="button" onclick="togglePwVisibility('spConfirmPassword',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:.9rem">👁️</button>
+          </div>
+        </div>
+        <div class="form-error" id="spError" style="margin-bottom:8px"></div>
+        <div style="background:var(--accent-bg);border-radius:8px;padding:10px 12px;font-size:.8rem;color:var(--accent-text);margin-bottom:14px">
+          Password must be at least 8 characters and contain letters &amp; numbers.
+        </div>
+        <button type="submit" class="btn btn-primary btn-full btn-lg" id="spBtn">Set Password &amp; Continue</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTER PAGE -->
+<div id="page-register" class="page" style="flex-direction:column;">
+  <div class="auth-page">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="auth-logo-icon">📚</div>
+        <span class="auth-logo-text">StudyVerse</span>
+      </div>
+      <h1 class="auth-title">Create account</h1>
+      <p class="auth-subtitle">Start organizing your academic life</p>
+      <form id="registerForm" onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-input" id="regEmail" placeholder="you@college.edu" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-input" id="regPassword" placeholder="Min. 6 characters" required minlength="6" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Security Question</label>
+          <select class="form-select" id="regSecurityQuestion" required>
+            <option value="">Select a question</option>
+            <option value="What is your mother's maiden name?">What is your mother's maiden name?</option>
+            <option value="What was the name of your first pet?">What was the name of your first pet?</option>
+            <option value="What city were you born in?">What city were you born in?</option>
+            <option value="What is your favourite book?">What is your favourite book?</option>
+            <option value="What was your childhood nickname?">What was your childhood nickname?</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Security Answer</label>
+          <input type="text" class="form-input" id="regSecurityAnswer" placeholder="Your answer" required />
+        </div>
+        <div id="registerError" class="form-error"></div>
+        <button type="submit" class="btn btn-primary btn-full btn-lg mt-4" id="registerBtn">
+          Create Account
+        </button>
+      </form>
+      <div class="separator"></div>
+      <div class="flex items-center justify-between">
+        <span class="text-sm text-muted">Already have an account?</span>
+        <button class="btn btn-ghost btn-sm" onclick="showPage('login')">Sign In</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FORGOT PASSWORD PAGE -->
+<div id="page-forgot" class="page" style="flex-direction:column;">
+  <div class="auth-page">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="auth-logo-icon">📚</div>
+        <span class="auth-logo-text">StudyVerse</span>
+      </div>
+      <h1 class="auth-title">Reset password</h1>
+      <p class="auth-subtitle">Answer your security question to reset</p>
+      <form id="forgotForm" onsubmit="handleForgotPassword(event)">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <div class="flex gap-2">
+            <input type="email" class="form-input" id="forgotEmail" placeholder="you@college.edu" required />
+            <button type="button" class="btn btn-ghost btn-sm" onclick="fetchSecurityQuestion()" style="white-space:nowrap">Get Question</button>
+          </div>
+        </div>
+        <div class="form-group" id="securityQuestionGroup" style="display:none">
+          <label class="form-label">Security Question</label>
+          <p id="forgotSecurityQuestion" class="text-sm" style="padding:10px;background:var(--bg-tertiary);border-radius:var(--radius-sm);color:var(--text-secondary)"></p>
+        </div>
+        <div class="form-group" id="securityAnswerGroup" style="display:none">
+          <label class="form-label">Security Answer</label>
+          <input type="text" class="form-input" id="forgotSecurityAnswer" placeholder="Your answer" />
+        </div>
+        <div class="form-group" id="newPasswordGroup" style="display:none">
+          <label class="form-label">New Password</label>
+          <input type="password" class="form-input" id="forgotNewPassword" placeholder="Min. 6 characters" minlength="6" />
+        </div>
+        <div id="forgotError" class="form-error"></div>
+        <button type="submit" class="btn btn-primary btn-full btn-lg mt-4" id="forgotBtn" style="display:none">Reset Password</button>
+      </form>
+      <div class="separator"></div>
+      <div class="flex items-center justify-between">
+        <span class="text-sm text-muted">Remember it?</span>
+        <button class="btn btn-ghost btn-sm" onclick="showPage('login')">Back to Login</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SETUP PAGE -->
+<div id="page-setup" class="page" style="flex-direction:column;">
+  <div class="setup-page">
+    <div class="setup-card">
+      <div class="auth-logo">
+        <div class="auth-logo-icon">📚</div>
+        <span class="auth-logo-text">StudyVerse</span>
+      </div>
+      <h1 class="auth-title">Set up your profile</h1>
+      <p class="auth-subtitle" style="margin-bottom:28px">Just two quick things to get started</p>
+      <form id="setupForm" onsubmit="handleSetup(event)">
+        <div class="form-group">
+          <label class="form-label">Display Name</label>
+          <input type="text" class="form-input" id="setupUsername" placeholder="What should we call you?" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Your Semester</label>
+          <div class="semester-options">
+            <div class="semester-option" id="sem1" onclick="selectSemester(3)">
+              <span class="semester-option-num">3</span>
+              <span class="semester-option-label">Third Semester</span>
+            </div>
+            <div class="semester-option" id="sem2" onclick="selectSemester(4)">
+              <span class="semester-option-num">4</span>
+              <span class="semester-option-label">Fourth Semester</span>
+            </div>
+          </div>
+          <input type="hidden" id="setupSemester" required />
+        </div>
+        <div id="setupError" class="form-error"></div>
+        <button type="submit" class="btn btn-primary btn-full btn-lg mt-4" id="setupBtn">
+          Let's Go 🚀
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MAIN APP ===================== -->
+<div id="page-app" class="page" style="flex-direction:row; flex:1;">
+
+  <!-- SIDEBAR OVERLAY (mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">📚</div>
+      <span class="sidebar-logo-text">StudyVerse</span>
+    </div>
+
+    <div class="sidebar-user">
+      <div class="sidebar-user-name" id="sidebarUsername">Loading...</div>
+      <div class="sidebar-user-meta" id="sidebarMeta">Semester —</div>
+      <div class="sidebar-user-points" id="sidebarPoints">⚡ 0 pts</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Overview</div>
+      <div class="nav-item active" onclick="navigateTo('dashboard')" id="nav-dashboard">
+        <span class="nav-icon">🏠</span> Dashboard
+      </div>
+      <div class="nav-item" onclick="navigateTo('progress')" id="nav-progress">
+        <span class="nav-icon">📊</span> Progress
+      </div>
+
+      <div class="nav-section-label" style="margin-top:8px">Academics</div>
+      <div class="nav-item" onclick="navigateTo('subjects')" id="nav-subjects">
+        <span class="nav-icon">📖</span> Subjects
+      </div>
+      <div class="nav-item" onclick="navigateTo('tasks')" id="nav-tasks">
+        <span class="nav-icon">✅</span> All Tasks
+        <span class="nav-badge" id="pendingTasksBadge" style="display:none">0</span>
+      </div>
+
+      <div class="nav-section-label" style="margin-top:8px">Community</div>
+      <div class="nav-item" onclick="navigateTo('leaderboard')" id="nav-leaderboard">
+        <span class="nav-icon">🏆</span> Leaderboard
+      </div>
+
+      <div class="nav-section-label" style="margin-top:8px">Account</div>
+      <div class="nav-item" onclick="navigateTo('settings')" id="nav-settings">
+        <span class="nav-icon">⚙️</span> Settings
+      </div>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="theme-toggle-row">
+        <span class="theme-toggle-label">🌙 Dark Mode</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="themeToggle" onchange="toggleTheme()" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <button class="btn btn-ghost btn-sm btn-full" onclick="handleLogout()">
+        🚪 Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT AREA -->
+  <div class="main-content">
+    <div class="topbar">
+      <button class="hamburger btn" onclick="toggleSidebar()">☰</button>
+      <div class="topbar-title" id="topbarTitle">Dashboard</div>
+      <div id="motivationalQuote" style="font-size:.75rem;color:var(--muted);font-style:italic;max-width:300px;text-align:right;display:none"></div>
+      <div class="topbar-actions">
+        <div class="streak-display" id="streakDisplay" style="display:none;">
+          🔥 <span id="streakCount">0</span> day streak
+        </div>
+        <button class="btn btn-accent btn-sm" onclick="populateTaskSubjectDropdown();openModal('taskModal')" id="quickAddTaskBtn">
+          + Add Task
+        </button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD VIEW -->
+    <div id="view-dashboard" class="content-area animate-in">
+      <div class="stats-grid" id="dashboardStats"></div>
+
+      <div class="three-col-grid">
+        <div>
+          <!-- Today's Tasks -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h3 class="card-title">📅 Today's Tasks</h3>
+              <button class="btn btn-ghost btn-sm" onclick="populateTaskSubjectDropdown();openModal('taskModal')">+ Add</button>
+            </div>
+            <div class="card-body" id="todayTasksList">
+              <div class="page-loading"><div class="loading-spinner"></div> Loading...</div>
+            </div>
+          </div>
+
+          <!-- Subject Progress Overview -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">📚 Subjects Overview</h3>
+              <button class="btn btn-ghost btn-sm" onclick="navigateTo('subjects')">View All</button>
+            </div>
+            <div class="card-body" id="subjectProgressList"></div>
+          </div>
+        </div>
+
+        <div>
+          <!-- Points & Streak -->
+          <div class="card mb-4" id="gamificationCard">
+            <div class="card-header"><h3 class="card-title">⚡ Your Stats</h3></div>
+            <div class="card-body" id="gamificationStats"></div>
+          </div>
+
+          <!-- Leaderboard Preview -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">🏆 Leaderboard</h3>
+              <button class="btn btn-ghost btn-sm" onclick="navigateTo('leaderboard')">View All</button>
+            </div>
+            <div id="leaderboardPreview" class="card-body"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUBJECTS VIEW -->
+    <div id="view-subjects" class="content-area animate-in" style="display:none">
+      <div class="section-header mb-4">
+        <div>
+          <h2 class="section-title">Your Subjects</h2>
+          <p class="text-sm text-muted mt-2" id="subjectsSubtitle"></p>
+        </div>
+      </div>
+      <div class="subjects-grid" id="subjectsGrid"></div>
+    </div>
+
+    <!-- SUBJECT DETAIL VIEW -->
+    <div id="view-subject-detail" class="content-area animate-in" style="display:none">
+      <div class="breadcrumb">
+        <span class="breadcrumb-link" onclick="navigateTo('subjects')">Subjects</span>
+        <span class="breadcrumb-sep">›</span>
+        <span id="subjectDetailName">Subject</span>
+      </div>
+
+      <div class="flex items-center gap-3 mb-4">
+        <span id="subjectDetailIcon" style="font-size:2rem"></span>
+        <div>
+          <h2 class="section-title" id="subjectDetailTitle"></h2>
+          <p class="text-sm text-muted" id="subjectDetailDesc"></p>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchSubjectTab('resources')" id="tab-resources">📎 Resources</button>
+        <button class="tab-btn" onclick="switchSubjectTab('tasks')" id="tab-tasks">✅ Tasks</button>
+      </div>
+
+      <!-- Resources Tab -->
+      <div id="subtab-resources">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-lg font-semibold">Study Resources</h3>
+          <button class="btn btn-accent btn-sm" onclick="openModal('resourceModal')">+ Add Resource</button>
+        </div>
+        <div class="card">
+          <div class="card-body" id="resourcesList"></div>
+        </div>
+      </div>
+
+      <!-- Tasks Tab -->
+      <div id="subtab-tasks" style="display:none">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-lg font-semibold">Subject Tasks</h3>
+          <button class="btn btn-accent btn-sm" onclick="populateTaskSubjectDropdown();openModal('taskModal')">+ Add Task</button>
+        </div>
+        <div class="card">
+          <div class="card-body" id="subjectTasksList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TASKS VIEW -->
+    <div id="view-tasks" class="content-area animate-in" style="display:none">
+      <div class="section-header mb-4">
+        <div>
+          <h2 class="section-title">All Tasks</h2>
+          <p class="text-sm text-muted mt-2">Manage and track all your tasks</p>
+        </div>
+        <button class="btn btn-accent" onclick="populateTaskSubjectDropdown();openModal('taskModal')">+ New Task</button>
+      </div>
+
+      <!-- Filters -->
+      <div class="flex gap-2 mb-4" style="flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm task-filter-btn active" onclick="filterTasks('all', this)">All</button>
+        <button class="btn btn-ghost btn-sm task-filter-btn" onclick="filterTasks('pending', this)">Pending</button>
+        <button class="btn btn-ghost btn-sm task-filter-btn" onclick="filterTasks('completed', this)">Completed</button>
+        <button class="btn btn-ghost btn-sm task-filter-btn" onclick="filterTasks('high', this)">🔴 High Priority</button>
+        <button class="btn btn-ghost btn-sm task-filter-btn" onclick="filterTasks('medium', this)">🟡 Medium</button>
+        <button class="btn btn-ghost btn-sm task-filter-btn" onclick="filterTasks('low', this)">🟢 Low</button>
+      </div>
+
+      <div class="card">
+        <div class="card-body" id="allTasksList">
+          <div class="page-loading"><div class="loading-spinner"></div> Loading tasks...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROGRESS VIEW -->
+    <div id="view-progress" class="content-area animate-in" style="display:none">
+      <div class="section-header mb-4">
+        <div>
+          <h2 class="section-title">Progress Tracker</h2>
+          <p class="text-sm text-muted mt-2">Your academic journey at a glance</p>
+        </div>
+      </div>
+
+      <div class="stats-grid mb-6" id="progressStats"></div>
+
+      <div class="two-col-grid">
+        <div class="card">
+          <div class="card-header"><h3 class="card-title">📚 Subject Breakdown</h3></div>
+          <div class="card-body" id="subjectProgressDetailed"></div>
+        </div>
+        <div>
+          <div class="card mb-4">
+            <div class="card-header"><h3 class="card-title">Overall Completion</h3></div>
+            <div class="card-body" id="overallProgressCircle"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3 class="card-title">⚡ Activity</h3></div>
+            <div class="card-body" id="activityStats"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEADERBOARD VIEW -->
+    <div id="view-leaderboard" class="content-area animate-in" style="display:none">
+      <div class="section-header mb-4">
+        <div>
+          <h2 class="section-title">🏆 Leaderboard</h2>
+          <p class="text-sm text-muted mt-2">Top performers — Complete tasks to earn points</p>
+        </div>
+      </div>
+
+      <div class="two-col-grid">
+        <div class="card">
+          <div class="card-header"><h3 class="card-title">Top 5 Students</h3></div>
+          <div class="card-body" id="fullLeaderboard"></div>
+        </div>
+        <div>
+          <div class="card mb-4">
+            <div class="card-header"><h3 class="card-title">Your Ranking</h3></div>
+            <div class="card-body" id="myRanking"></div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Leaderboard Opt-In</h3>
+            </div>
+            <div class="card-body">
+              <p class="text-sm text-secondary mb-3">Choose whether your name appears on the leaderboard.</p>
+              <label class="theme-toggle-row" style="cursor:pointer">
+                <span class="theme-toggle-label">Show me on leaderboard</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="leaderboardOptIn" onchange="updateLeaderboardOptIn(this.checked)" />
+                  <span class="toggle-slider"></span>
+                </label>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS VIEW -->
+    <div id="view-settings" class="content-area animate-in" style="display:none">
+      <div class="section-header mb-4">
+        <div>
+          <h2 class="section-title">⚙️ Settings</h2>
+          <p class="text-sm text-muted mt-2">Manage your account preferences</p>
+        </div>
+      </div>
+
+      <div class="profile-header mb-4">
+        <div class="profile-avatar" id="profileAvatar">?</div>
+        <div>
+          <div class="text-lg font-bold" id="profileName">—</div>
+          <div class="text-sm text-muted" id="profileEmail">—</div>
+          <div class="text-sm text-muted" id="profileSemester">—</div>
+        </div>
+        <div class="flex gap-2" style="margin-left:auto">
+          <div class="streak-display">🔥 <span id="profileStreak">0</span> days</div>
+          <div class="sidebar-user-points" style="display:inline-flex">⚡ <span id="profilePoints">0</span> pts</div>
+        </div>
+      </div>
+
+      <div class="two-col-grid">
+        <div class="card">
+          <div class="card-header"><h3 class="card-title">Update Profile</h3></div>
+          <div class="card-body">
+            <form onsubmit="handleUpdateProfile(event)">
+              <div class="form-group">
+                <label class="form-label">Display Name</label>
+                <input type="text" class="form-input" id="settingsUsername" placeholder="Your name" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Semester</label>
+                <select class="form-select" id="settingsSemester">
+  <option value="3">Semester 3</option>
+  <option value="4">Semester 4</option>
+</select>
+              </div>
+              <button type="submit" class="btn btn-primary btn-full">Update Profile</button>
+            </form>
+          </div>
+        </div>
+
+        <div>
+          <div class="card mb-4">
+            <div class="card-header"><h3 class="card-title">🎨 Appearance</h3></div>
+            <div class="card-body">
+              <div class="theme-toggle-row" style="padding:0">
+                <span class="theme-toggle-label">Dark Mode</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="themeToggleSettings" onchange="toggleTheme()" />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3 class="card-title">🚪 Session</h3></div>
+            <div class="card-body">
+              <p class="text-sm text-secondary mb-3">Sign out of your account on this device.</p>
+              <button class="btn btn-danger btn-full" onclick="handleLogout()">Sign Out</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODALS ===================== -->
+
+<!-- ADD TASK MODAL -->
+<div class="modal-overlay" id="taskModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">New Task</h3>
+      <button class="modal-close" onclick="closeModal('taskModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="taskForm" onsubmit="handleAddTask(event)">
+        <div class="form-group">
+          <label class="form-label">Task Title</label>
+          <input type="text" class="form-input" id="taskTitle" placeholder="e.g. Complete assignment..." required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description (optional)</label>
+          <textarea class="form-textarea" id="taskDescription" placeholder="Add details..."></textarea>
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Priority</label>
+            <select class="form-select" id="taskPriority">
+              <option value="low">🟢 Low</option>
+              <option value="medium" selected>🟡 Medium</option>
+              <option value="high">🔴 High</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Due Date</label>
+            <input type="date" class="form-input" id="taskDueDate" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Subject (optional)</label>
+          <select class="form-select" id="taskSubject">
+            <option value="">No subject</option>
+          </select>
+        </div>
+        <div id="taskError" class="form-error"></div>
+        <div class="flex gap-2 mt-4">
+          <button type="button" class="btn btn-ghost btn-full" onclick="closeModal('taskModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-full">Add Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ADD RESOURCE MODAL -->
+<div class="modal-overlay" id="resourceModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Add Resource</h3>
+      <button class="modal-close" onclick="closeModal('resourceModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="resourceForm" onsubmit="handleAddResource(event)">
+        <div class="form-group">
+          <label class="form-label">Title</label>
+          <input type="text" class="form-input" id="resourceTitle" placeholder="e.g. YouTube lecture on Trees" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">URL</label>
+          <input type="url" class="form-input" id="resourceUrl" placeholder="https://..." required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description (optional)</label>
+          <input type="text" class="form-input" id="resourceDescription" placeholder="Brief note..." />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Type</label>
+          <select class="form-select" id="resourceType">
+            <option value="link">🔗 Link</option>
+            <option value="video">🎥 Video</option>
+            <option value="article">📄 Article</option>
+            <option value="pdf">📋 PDF</option>
+            <option value="notes">📝 Notes</option>
+          </select>
+        </div>
+        <div id="resourceError" class="form-error"></div>
+        <div class="flex gap-2 mt-4">
+          <button type="button" class="btn btn-ghost btn-full" onclick="closeModal('resourceModal')">Cancel</button>
+          <button type="submit" class="btn btn-accent btn-full">Add Resource</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- SCRIPTS -->
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/app.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/subjects.js"></script>
+<script src="js/tasks.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/leaderboard.js"></script>
+<script src="js/settings.js"></script>
+</body>
+</html>
