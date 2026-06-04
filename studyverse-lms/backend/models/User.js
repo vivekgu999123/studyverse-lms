@@ -6,7 +6,7 @@ const UserSchema = new mongoose.Schema({
   // ── Core ──────────────────────────────────────────────
   name:     { type: String, trim: true, default: '' },
   username: { type: String, trim: true, default: '' },
-  usn:      { type: String, trim: true, uppercase: true, default: '' },
+  usn:      { type: String, trim: true, uppercase: true, unique: true, sparse: true, default: '' },
   email: {
     type: String, required: [true, 'Email is required'],
     unique: true, lowercase: true,
@@ -19,7 +19,7 @@ const UserSchema = new mongoose.Schema({
 
   // ── Academic ──────────────────────────────────────────
   department: { type: String, default: 'CSE' },
-  semester:   { type: Number, enum: [3,4], default: null },
+  semester:   { type: Number, enum: [1,2,3,4,5,6,7,8], default: null },
 
   // ── Status ────────────────────────────────────────────
   status:   { type: String, enum: ['active','suspended','blocked'], default: 'active' },

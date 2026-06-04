@@ -27,15 +27,15 @@ router.post('/students', protect, authorize('admin', 'team_member'), upload.sing
     const row = records[i];
     const rowNum = i + 2; // 1-indexed + header
 
-    const name       = (row.Name || row.name || '').trim();
     const usn        = (row.USN  || row.usn  || '').trim().toUpperCase();
-    const email      = (row.Email || row.email || '').trim().toLowerCase();
-    const password   = (row.Password || row.password || '').trim();
+    const email      = (row.Email || row.email || '').trim().toLowerCase() || (usn ? usn.toLowerCase() + '@studyverse.edu' : '');
+    const password   = (row.Password || row.password || 'Welcome@123').trim();
     const department = (row.Department || row.department || 'CSE').trim();
     const semester   = parseInt(row.Semester || row.semester || '3');
+    const name       = (row.Name || row.name || '').trim();
 
-    if (!name || !usn || !email || !password) {
-      results.failed.push({ row: rowNum, reason: 'Missing required fields', data: row });
+    if (!usn || !email) {
+      results.failed.push({ row: rowNum, reason: 'Missing USN (required)', data: row });
       continue;
     }
     if (!/^\S+@\S+\.\S+$/.test(email)) {
@@ -44,14 +44,22 @@ router.post('/students', protect, authorize('admin', 'team_member'), upload.sing
     }
 
     try {
-      const exists = await User.findOne({ $or: [{ email }, { usn }] });
-      if (exists) {
+      // USN is the primary key — check for duplicate USN first
+      const existsByUsn = await User.findOne({ usn });
+      if (existsByUsn) {
+        results.duplicates++;
+        results.rows.push({ row: rowNum, status: 'duplicate', email, usn });
+        continue;
+      }
+      // Also check email to avoid duplicate email errors
+      const existsByEmail = await User.findOne({ email });
+      if (existsByEmail) {
         results.duplicates++;
         results.rows.push({ row: rowNum, status: 'duplicate', email, usn });
         continue;
       }
       await User.create({
-        name, username: name, usn, email, password,
+        name: name || '', username: name || '', usn, email, password,
         department, semester: isNaN(semester) ? 3 : semester,
         role: 'student', firstLogin: true
       });

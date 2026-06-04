@@ -30,22 +30,26 @@ router.post('/login', async (req, res) => {
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 });
 
-// POST /api/auth/set-password  (first-login password setup)
+// POST /api/auth/set-password  (first-login password + username setup)
 router.post('/set-password', protect, async (req, res) => {
-  const { newPassword, confirmPassword } = req.body;
+  const { newPassword, confirmPassword, username } = req.body;
   if (!newPassword || newPassword.length < 8)
     return res.status(400).json({ success: false, message: 'Password must be at least 8 characters.' });
   if (!/(?=.*[a-zA-Z])(?=.*[0-9])/.test(newPassword))
     return res.status(400).json({ success: false, message: 'Password must contain letters and numbers.' });
   if (newPassword !== confirmPassword)
     return res.status(400).json({ success: false, message: 'Passwords do not match.' });
+  if (!username || !username.trim())
+    return res.status(400).json({ success: false, message: 'Username is required.' });
   try {
     const user = await User.findById(req.user._id);
     user.password          = newPassword;
+    user.username          = username.trim();
+    user.name              = username.trim();
     user.firstLogin        = false;
     user.passwordUpdatedAt = new Date();
     await user.save();
-    res.json({ success: true, message: 'Password updated successfully.' });
+    res.json({ success: true, message: 'Password and username updated successfully.', user: { id: user._id, email: user.email, name: user.name, username: user.username, usn: user.usn, role: user.role, semester: user.semester, points: user.points, streak: user.streak, firstLogin: user.firstLogin, optInLeaderboard: user.optInLeaderboard } });
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 });
 

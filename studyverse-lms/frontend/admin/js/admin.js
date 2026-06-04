@@ -646,50 +646,19 @@ function loadImportView() {
   const el = $('view-import');
   el.innerHTML = `
     <div class="section-header mb-4"><div class="section-title">📥 CSV Student Import</div></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
-      <div>
-        <div class="card mb-4">
-          <div class="card-header"><span class="card-title">Upload CSV File</span></div>
-          <div class="card-body">
-            <div class="upload-area" id="upload-area" onclick="$('csv-file').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event)">
-              <input type="file" id="csv-file" accept=".csv" onchange="handleFileSelect(event)"/>
-              <div style="font-size:2.5rem;margin-bottom:8px">📁</div>
-              <div style="font-weight:600;font-size:.9rem;color:var(--text2)">Click to upload or drag & drop</div>
-              <div class="text-xs text-muted" style="margin-top:4px">CSV files only · Max 5MB</div>
-            </div>
-            <div id="file-selected" style="margin-top:10px;display:none;padding:10px;background:var(--success-bg);border-radius:8px;font-size:.84rem;color:var(--success)"></div>
-            <button class="btn btn-accent btn-full btn-lg" style="margin-top:14px" id="import-btn" onclick="doImport()" disabled>Import Students</button>
-            <div id="import-result" style="margin-top:12px"></div>
+    <div style="max-width:600px;margin:0 auto">
+      <div class="card mb-4">
+        <div class="card-header"><span class="card-title">Upload CSV File</span></div>
+        <div class="card-body">
+          <div class="upload-area" id="upload-area" onclick="$('csv-file').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event)">
+            <input type="file" id="csv-file" accept=".csv" onchange="handleFileSelect(event)"/>
+            <div style="font-size:2.5rem;margin-bottom:8px">📁</div>
+            <div style="font-weight:600;font-size:.9rem;color:var(--text2)">Click to upload or drag & drop</div>
+            <div class="text-xs text-muted" style="margin-top:4px">CSV files only · Max 5MB</div>
           </div>
-        </div>
-      </div>
-      <div>
-        <div class="card mb-4">
-          <div class="card-header"><span class="card-title">CSV Format</span></div>
-          <div class="card-body">
-            <p class="text-sm text-secondary" style="margin-bottom:12px">Your CSV must have these columns (header row required):</p>
-            <div style="background:var(--bg3);border-radius:8px;padding:12px;font-family:monospace;font-size:.8rem;color:var(--text2);overflow-x:auto">Name,USN,Email,Password,Department,Semester</div>
-            <div class="sep"></div>
-            <p class="text-sm text-muted mb-4" style="margin-bottom:10px">Example rows:</p>
-            <div style="background:var(--bg3);border-radius:8px;padding:12px;font-family:monospace;font-size:.78rem;color:var(--text2);overflow-x:auto;line-height:1.6">
-              Rahul Sharma,1RV23CS001,rahul@college.edu,rahul@123,CSE,3<br>
-              Priya Nair,1RV23CS002,priya@college.edu,priya@123,CSE,3
-            </div>
-            <div class="sep"></div>
-            <p class="text-xs text-muted">Students will log in using their email or USN with the temporary password. They must change their password on first login.</p>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-header"><span class="card-title">Import Rules</span></div>
-          <div class="card-body">
-            <div class="text-sm text-secondary" style="line-height:1.9">
-              ✅ Duplicate emails/USNs are skipped<br>
-              ✅ Invalid rows are reported separately<br>
-              ✅ Passwords are hashed automatically<br>
-              ✅ Students must change password on first login<br>
-              ⚠️ Public student self-registration is disabled
-            </div>
-          </div>
+          <div id="file-selected" style="margin-top:10px;display:none;padding:10px;background:var(--success-bg);border-radius:8px;font-size:.84rem;color:var(--success)"></div>
+          <button class="btn btn-accent btn-full btn-lg" style="margin-top:14px" id="import-btn" onclick="doImport()" disabled>Import Students</button>
+          <div id="import-result" style="margin-top:12px"></div>
         </div>
       </div>
     </div>`;

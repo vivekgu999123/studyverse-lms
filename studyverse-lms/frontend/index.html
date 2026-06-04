@@ -27,7 +27,7 @@
       <form id="loginForm" onsubmit="handleLogin(event)">
         <div class="form-group">
           <label class="form-label">Email or USN</label>
-          <input type="text" class="form-input" id="loginEmail" placeholder="you@college.edu or 1RV23CS001" required />
+          <input type="text" class="form-input" id="loginEmail" placeholder="01FE25BCS001 or you@studyverse.edu" required />
         </div>
         <div class="form-group">
           <label class="form-label">Password</label>
@@ -60,9 +60,13 @@
         <div class="auth-logo-icon">📚</div>
         <span class="auth-logo-text">StudyVerse</span>
       </div>
-      <h1 class="auth-title">Set Your Password</h1>
-      <p class="auth-subtitle">Welcome! Please create your own password before accessing your dashboard.</p>
+      <h1 class="auth-title">Complete Your Profile</h1>
+      <p class="auth-subtitle">Welcome! Set a username and create a secure password to get started.</p>
       <form onsubmit="handleSetPassword(event)" style="margin-top:20px">
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input type="text" class="form-input" id="spUsername" placeholder="Enter username (display name)" required />
+        </div>
         <div class="form-group">
           <label class="form-label">New Password</label>
           <div style="position:relative">
@@ -88,7 +92,7 @@
         <div style="background:var(--accent-bg);border-radius:8px;padding:10px 12px;font-size:.8rem;color:var(--accent-text);margin-bottom:14px">
           Password must be at least 8 characters and contain letters &amp; numbers.
         </div>
-        <button type="submit" class="btn btn-primary btn-full btn-lg" id="spBtn">Set Password &amp; Continue</button>
+        <button type="submit" class="btn btn-primary btn-full btn-lg" id="spBtn">Set Password &amp; Username</button>
       </form>
     </div>
   </div>
@@ -529,9 +533,15 @@
               <div class="form-group">
                 <label class="form-label">Semester</label>
                 <select class="form-select" id="settingsSemester">
-  <option value="3">Semester 3</option>
-  <option value="4">Semester 4</option>
-</select>
+                  <option value="1">Semester 1</option>
+                  <option value="2">Semester 2</option>
+                  <option value="3">Semester 3</option>
+                  <option value="4">Semester 4</option>
+                  <option value="5">Semester 5</option>
+                  <option value="6">Semester 6</option>
+                  <option value="7">Semester 7</option>
+                  <option value="8">Semester 8</option>
+                </select>
               </div>
               <button type="submit" class="btn btn-primary btn-full">Update Profile</button>
             </form>

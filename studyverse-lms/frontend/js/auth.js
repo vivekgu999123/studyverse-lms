@@ -256,10 +256,16 @@ window.addEventListener('DOMContentLoaded', () => {
 // ===================== FIRST LOGIN PASSWORD SETUP =====================
 async function handleSetPassword(e) {
   e.preventDefault();
+  const username       = document.getElementById('spUsername')?.value.trim() || '';
   const newPassword    = document.getElementById('spNewPassword')?.value || '';
   const confirmPassword = document.getElementById('spConfirmPassword')?.value || '';
   const errEl = document.getElementById('spError');
 
+  if (!username) {
+    errEl.textContent = 'Username is required.';
+    errEl.classList.add('show');
+    return;
+  }
   if (!newPassword || newPassword.length < 8) {
     errEl.textContent = 'Password must be at least 8 characters.';
     errEl.classList.add('show');
@@ -280,18 +286,16 @@ async function handleSetPassword(e) {
   const btn = document.getElementById('spBtn');
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
-    await api.post('/auth/set-password', { newPassword, confirmPassword });
+    const data = await api.post('/auth/set-password', { newPassword, confirmPassword, username });
     // Update stored user
-    const u = JSON.parse(localStorage.getItem('st_user') || '{}');
-    u.firstLogin = false;
-    localStorage.setItem('st_user', JSON.stringify(u));
-    showToast('Password set successfully! Welcome to StudyVerse.', 'success');
+    localStorage.setItem('st_user', JSON.stringify(data.user));
+    showToast('Profile set up successfully! Welcome to StudyVerse.', 'success');
     setTimeout(() => initApp(), 800);
   } catch (err) {
-    errEl.textContent = err.message || 'Failed to set password.';
+    errEl.textContent = err.message || 'Failed to set password & username.';
     errEl.classList.add('show');
   } finally {
-    btn.disabled = false; btn.textContent = 'Set Password';
+    btn.disabled = false; btn.textContent = 'Set Password & Username';
   }
 }
 
