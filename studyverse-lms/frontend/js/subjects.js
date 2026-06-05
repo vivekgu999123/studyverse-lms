@@ -201,7 +201,21 @@ async function loadSubjectTasks(subjectId) {
         </div>`;
       return;
     }
-    container.innerHTML = tasks.map(t => renderTaskItem(t, 'subject')).join('');
+
+    const pending = tasks.filter(t => t.status === 'pending');
+    const completed = tasks.filter(t => t.status === 'completed');
+
+    let html = '';
+    if (pending.length) {
+      html += `<div class="text-xs font-semibold text-muted mb-2" style="text-transform:uppercase;letter-spacing:.06em">⏳ Pending Tasks</div>`;
+      html += pending.map(t => renderTaskItem(t, 'subject')).join('');
+    }
+    if (completed.length) {
+      html += `<div class="text-xs font-semibold text-muted mb-2 mt-4" style="text-transform:uppercase;letter-spacing:.06em">✅ Completed Tasks</div>`;
+      html += completed.map(t => renderTaskItem(t, 'subject')).join('');
+    }
+    
+    container.innerHTML = html;
   } catch {
     container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-title">Failed to load tasks</div></div>`;
   }

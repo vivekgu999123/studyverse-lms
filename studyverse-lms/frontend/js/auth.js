@@ -259,6 +259,8 @@ async function handleSetPassword(e) {
   const username       = document.getElementById('spUsername')?.value.trim() || '';
   const newPassword    = document.getElementById('spNewPassword')?.value || '';
   const confirmPassword = document.getElementById('spConfirmPassword')?.value || '';
+  const securityQuestion = document.getElementById('spSecurityQuestion')?.value || '';
+  const securityAnswer   = document.getElementById('spSecurityAnswer')?.value.trim() || '';
   const errEl = document.getElementById('spError');
 
   if (!username) {
@@ -281,12 +283,22 @@ async function handleSetPassword(e) {
     errEl.classList.add('show');
     return;
   }
+  if (!securityQuestion) {
+    errEl.textContent = 'Please select a security question.';
+    errEl.classList.add('show');
+    return;
+  }
+  if (!securityAnswer) {
+    errEl.textContent = 'Security answer is required.';
+    errEl.classList.add('show');
+    return;
+  }
   errEl.classList.remove('show');
 
   const btn = document.getElementById('spBtn');
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
-    const data = await api.post('/auth/set-password', { newPassword, confirmPassword, username });
+    const data = await api.post('/auth/set-password', { newPassword, confirmPassword, username, securityQuestion, securityAnswer });
     // Update stored user
     localStorage.setItem('st_user', JSON.stringify(data.user));
     showToast('Profile set up successfully! Welcome to StudyVerse.', 'success');

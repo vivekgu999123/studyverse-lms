@@ -3,6 +3,25 @@ const router   = express.Router();
 const Resource = require('../models/Resource');
 const { protect, authorize } = require('../middleware/auth');
 const logAction = require('../middleware/auditLog');
+const multer   = require('multer');
+const path     = require('path');
+const fs       = require('fs');
+
+// Configure upload storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, '../../uploads/resources');
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB limit
 
 // GET /api/resources?subjectId=xxx
 router.get('/', protect, async (req, res) => {
@@ -32,17 +51,23 @@ router.get('/all', protect, authorize('admin', 'team_member'), async (req, res) 
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 });
 
-// POST /api/resources
-router.post('/', protect, async (req, res) => {
+// POST /api/resources (Accepts optional file upload)
+router.post('/', protect, upload.single('file'), async (req, res) => {
   const { title, url, description, subjectId, resourceType } = req.body;
-  if (!title || !url || !subjectId)
-    return res.status(400).json({ success: false, message: 'Title, URL and subjectId are required.' });
+  if (!title || !subjectId)
+    return res.status(400).json({ success: false, message: 'Title and subjectId are required.' });
+  if (!url && !req.file)
+    return res.status(400).json({ success: false, message: 'Either a URL or an uploaded file is required.' });
+
   try {
+    const finalUrl = req.file ? `/uploads/resources/${req.file.filename}` : url;
     const isAdminOrTeam = ['admin','team_member'].includes(req.user.role);
     const resource = await Resource.create({
-      title, url, description,
+      title,
+      url: finalUrl,
+      description: description || '',
       subject: subjectId,
-      resourceType: resourceType || 'link',
+      resourceType: resourceType || 'notes',
       type: isAdminOrTeam ? 'system' : 'personal',
       userId: req.user._id
     });

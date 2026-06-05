@@ -1,5 +1,5 @@
 // ===================== ALL TASKS VIEW =====================
-let currentTaskFilter = 'all';
+let currentTaskFilter = 'pending';
 let allTasksCache = [];
 
 async function loadTasksView() {

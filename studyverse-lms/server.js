@@ -9,6 +9,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'frontend')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ── Original routes ──────────────────────────────────────
 app.use('/api/auth',         require('./backend/routes/auth'));

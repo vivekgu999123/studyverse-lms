@@ -6,7 +6,7 @@ const UserSchema = new mongoose.Schema({
   // ── Core ──────────────────────────────────────────────
   name:     { type: String, trim: true, default: '' },
   username: { type: String, trim: true, default: '' },
-  usn:      { type: String, trim: true, uppercase: true, unique: true, sparse: true, default: '' },
+  usn:      { type: String, trim: true, uppercase: true, unique: true, sparse: true },
   email: {
     type: String, required: [true, 'Email is required'],
     unique: true, lowercase: true,

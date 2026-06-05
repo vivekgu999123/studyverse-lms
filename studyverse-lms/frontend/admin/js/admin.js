@@ -113,6 +113,12 @@ function initApp() {
   const u = AdminState.user;
   $('sb-name').textContent = u.name || u.email;
   $('sb-role').textContent = u.role === 'admin' ? '🔑 Admin' : '👥 Team Member';
+  
+  const createAdminNav = $('nav-create-admin');
+  if (createAdminNav) {
+    createAdminNav.style.display = u.role === 'admin' ? 'flex' : 'none';
+  }
+
   showPage('page-app');
   goTo('overview');
 }
@@ -126,6 +132,12 @@ const TITLES = {
 };
 
 function goTo(view) {
+  if (view === 'create-admin' && AdminState.user?.role !== 'admin') {
+    toast('Access denied. Admin role required.', 'error');
+    goTo('overview');
+    return;
+  }
+
   VIEWS.forEach(v => { const el=$('view-'+v); if(el) el.style.display='none'; });
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const target = $('view-'+view);
@@ -580,8 +592,10 @@ async function openResourceModal() {
     : subjects.map(s => '<option value="'+s._id+'">'+esc(s.icon||'📚')+' '+esc(s.name)+' (Sem '+s.semester+')</option>').join('');
   $('res-title').value = '';
   $('res-url').value = '';
+  const fileInput = $('res-file');
+  if (fileInput) fileInput.value = '';
   $('res-desc').value = '';
-  $('res-type').value = 'link';
+  $('res-type').value = 'notes';
   clearErr('res-err');
   openModal('modal-resource');
 }
@@ -592,9 +606,29 @@ async function saveResource() {
   const subjectId = $('res-subject').value;
   const resourceType = $('res-type').value;
   const description = $('res-desc').value.trim();
-  if (!title || !url || !subjectId) return showErr('res-err', 'Title, URL and subject are required.');
+  const fileInput = $('res-file');
+  const file = fileInput ? fileInput.files[0] : null;
+
+  if (!title || !subjectId) return showErr('res-err', 'Title and subject are required.');
+  if (!url && !file) return showErr('res-err', 'Either a URL or an uploaded file is required.');
+
   try {
-    await api('POST', '/resources', { title, url, subjectId, resourceType, description });
+    let body;
+    let isFormData = false;
+    if (file) {
+      body = new FormData();
+      body.append('title', title);
+      if (url) body.append('url', url);
+      body.append('subjectId', subjectId);
+      body.append('resourceType', resourceType);
+      body.append('description', description);
+      body.append('file', file);
+      isFormData = true;
+    } else {
+      body = { title, url, subjectId, resourceType, description };
+    }
+
+    await api('POST', '/resources', body, isFormData);
     closeModal('modal-resource');
     toast('Resource added!', 'success');
     loadResources();

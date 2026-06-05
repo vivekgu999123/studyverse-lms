@@ -5,6 +5,7 @@ const AppState = {
   allTasks: [],
   currentSubject: null,
   currentView: 'dashboard',
+  activeCompletion: null,
 };
 
 // ===================== INIT APP =====================
@@ -63,6 +64,17 @@ const viewTitles = {
 };
 
 async function navigateTo(view, data = null) {
+  // Cancel pending completion if navigating away from target page
+  if (AppState.activeCompletion) {
+    const isStillOnTarget = (AppState.activeCompletion.subjectId && view === 'subject-detail' && data === AppState.activeCompletion.subjectId) ||
+                            (!AppState.activeCompletion.subjectId && view === 'tasks');
+    if (!isStillOnTarget) {
+      clearTimeout(AppState.activeCompletion.timer);
+      showToast('Task completion cancelled because you navigated away.', 'info');
+      AppState.activeCompletion = null;
+    }
+  }
+
   // Hide all views
   document.querySelectorAll('[id^="view-"]').forEach(v => v.style.display = 'none');
 

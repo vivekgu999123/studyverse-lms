@@ -20,7 +20,7 @@ async function loadTodayTasks() {
   if (!container) return;
   container.innerHTML = `<div class="page-loading"><div class="loading-spinner"></div></div>`;
   try {
-    const data = await api.get('/tasks?today=true');
+    const data = await api.get('/tasks?today=true&status=pending');
     const tasks = data.tasks || [];
     AppState.allTasks = tasks;
     renderTodayTasks(tasks, container);
@@ -54,9 +54,13 @@ function renderTaskItem(task, context = 'all') {
     ? `<span class="subject-chip" style="background:${task.subject.color}22;color:${task.subject.color}">${task.subject.icon} ${task.subject.name}</span>`
     : '';
 
+  const clickAction = context === 'dashboard'
+    ? `handleDashboardTaskClick('${task._id}', '${task.subject ? task.subject._id : ''}')`
+    : `toggleTaskStatus('${task._id}', '${done ? 'pending' : 'completed'}')`;
+
   return `
     <div class="task-item" id="task-${task._id}">
-      <div class="task-check ${done ? 'checked' : ''}" onclick="toggleTaskStatus('${task._id}', '${done ? 'pending' : 'completed'}')"></div>
+      <div class="task-check ${done ? 'checked' : ''}" onclick="${clickAction}"></div>
       <div class="task-content">
         <div class="task-title ${done ? 'done' : ''}">${escapeHtml(task.title)}</div>
         <div class="task-meta">
@@ -69,6 +73,54 @@ function renderTaskItem(task, context = 'all') {
         <button class="btn btn-icon" onclick="deleteTask('${task._id}')" title="Delete" style="color:var(--text-muted);font-size:0.85rem">🗑️</button>
       </div>
     </div>`;
+}
+
+async function handleDashboardTaskClick(taskId, subjectId) {
+  triggerTaskCompletion(taskId, subjectId);
+}
+
+async function triggerTaskCompletion(taskId, subjectId) {
+  if (AppState.activeCompletion) {
+    showToast('A task is already undergoing completion wait.', 'warning');
+    return;
+  }
+
+  // Redirect to relevant section first
+  if (subjectId) {
+    navigateTo('subject-detail', subjectId);
+    setTimeout(() => {
+      switchSubjectTab('tasks');
+    }, 200);
+  } else {
+    navigateTo('tasks');
+  }
+
+  showToast('Stay on this page for 1.5 minutes to complete the task...', 'info', 6000);
+
+  const timer = setTimeout(async () => {
+    try {
+      await api.put(`/tasks/${taskId}`, { status: 'completed' });
+      showToast(`Task completed! +10 pts 🎉`, 'success');
+      refreshUserFromServer();
+      updatePendingBadge();
+      AppState.activeCompletion = null;
+
+      // Refresh current view to show the completed task in the completed section
+      if (AppState.currentView === 'subject-detail' && AppState.currentSubject) {
+        loadSubjectTasks(AppState.currentSubject._id);
+      } else if (AppState.currentView === 'tasks') {
+        loadTasksView();
+      }
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }, 90000); // 90 seconds = 1.5 minutes
+
+  AppState.activeCompletion = {
+    timer,
+    taskId,
+    subjectId
+  };
 }
 
 function escapeHtml(str) {
@@ -93,7 +145,7 @@ async function loadDashboardProgress() {
         <div class="stat-card">
           <div class="stat-icon" style="background:var(--warning-light)">⏳</div>
           <div class="stat-value">${p.pending}</div>
-          <div class="stat-label">Pending</div>
+          <div class="stat-label">Pending Tasks</div>
         </div>
         <div class="stat-card">
           <div class="stat-icon" style="background:var(--success-light)">📈</div>
@@ -172,36 +224,28 @@ async function loadLeaderboardPreview() {
 
 // ===================== TASK TOGGLE =====================
 async function toggleTaskStatus(taskId, newStatus) {
+  if (newStatus === 'completed') {
+    const task = AppState.allTasks.find(t => t._id === taskId) || 
+                 (typeof allTasksCache !== 'undefined' ? allTasksCache.find(t => t._id === taskId) : null);
+    const subjectId = task && task.subject ? (task.subject._id || task.subject) : null;
+    triggerTaskCompletion(taskId, subjectId);
+    return;
+  }
+
   try {
     const data = await api.put(`/tasks/${taskId}`, { status: newStatus });
-    const task = data.task;
-
-    // Update the DOM task item
-    const taskEl = document.getElementById(`task-${taskId}`);
-    if (taskEl) {
-      const check = taskEl.querySelector('.task-check');
-      const title = taskEl.querySelector('.task-title');
-      if (newStatus === 'completed') {
-        check.classList.add('checked');
-        title.classList.add('done');
-      } else {
-        check.classList.remove('checked');
-        title.classList.remove('done');
-      }
-    }
-
-    if (newStatus === 'completed') {
-      showToast(`Task completed! +10 pts 🎉`, 'success');
-      refreshUserFromServer();
-    }
+    showToast('Task moved back to pending.', 'info');
+    refreshUserFromServer();
+    updatePendingBadge();
 
     // Refresh relevant sections
     if (AppState.currentView === 'dashboard') {
       setTimeout(loadDashboardProgress, 500);
     } else if (AppState.currentView === 'tasks') {
       setTimeout(loadTasksView, 300);
+    } else if (AppState.currentView === 'subject-detail' && AppState.currentSubject) {
+      loadSubjectTasks(AppState.currentSubject._id);
     }
-    updatePendingBadge();
   } catch (err) {
     showToast(err.message, 'error');
   }
