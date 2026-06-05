@@ -75,8 +75,9 @@ router.get('/me', protect, (req, res) => res.json({ success: true, user: req.use
 router.put('/setup', protect, async (req, res) => {
   const { username, semester } = req.body;
   if (!username || !semester) return res.status(400).json({ success: false, message: 'Username and semester required.' });
+  if (![3, 4].includes(Number(semester))) return res.status(400).json({ success: false, message: 'Only semester 3 and 4 are supported.' });
   try {
-    const user = await User.findByIdAndUpdate(req.user._id, { username, semester }, { new: true });
+    const user = await User.findByIdAndUpdate(req.user._id, { username, semester: Number(semester) }, { new: true });
     res.json({ success: true, user });
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 });

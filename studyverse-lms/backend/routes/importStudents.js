@@ -30,12 +30,16 @@ router.post('/students', protect, authorize('admin', 'team_member'), upload.sing
     const usn        = (row.USN  || row.usn  || '').trim().toUpperCase();
     const email      = (row.Email || row.email || '').trim().toLowerCase() || (usn ? usn.toLowerCase() + '@studyverse.edu' : '');
     const password   = (row.Password || row.password || 'Welcome@123').trim();
-    const department = (row.Department || row.department || 'CSE').trim();
+    const department = 'CSE';
     const semester   = parseInt(row.Semester || row.semester || '3');
     const name       = (row.Name || row.name || '').trim();
 
     if (!usn || !email) {
       results.failed.push({ row: rowNum, reason: 'Missing USN (required)', data: row });
+      continue;
+    }
+    if (![3, 4].includes(semester)) {
+      results.failed.push({ row: rowNum, reason: 'Invalid semester (only 3 or 4 allowed)', data: row });
       continue;
     }
     if (!/^\S+@\S+\.\S+$/.test(email)) {

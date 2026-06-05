@@ -18,8 +18,8 @@ const UserSchema = new mongoose.Schema({
   role: { type: String, enum: ['student','team_member','admin'], default: 'student' },
 
   // ── Academic ──────────────────────────────────────────
-  department: { type: String, default: 'CSE' },
-  semester:   { type: Number, enum: [1,2,3,4,5,6,7,8], default: null },
+  department: { type: String, default: 'CSE', enum: ['CSE'] },
+  semester:   { type: Number, enum: [3, 4], default: null },
 
   // ── Status ────────────────────────────────────────────
   status:   { type: String, enum: ['active','suspended','blocked'], default: 'active' },

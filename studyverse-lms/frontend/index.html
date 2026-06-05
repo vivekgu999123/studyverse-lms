@@ -24,6 +24,10 @@
       </div>
       <h1 class="auth-title">Welcome back</h1>
       <p class="auth-subtitle">Sign in to continue your learning streak</p>
+      <div style="background:var(--accent-bg);border-radius:8px;padding:10px 12px;font-size:.82rem;color:var(--accent-text);margin-bottom:16px;border:1px solid rgba(37,99,235,0.15);display:flex;align-items:center;gap:8px;">
+        <span>🔑</span>
+        <span><strong>First Login:</strong> Use default password <code>Welcome@123</code></span>
+      </div>
       <form id="loginForm" onsubmit="handleLogin(event)">
         <div class="form-group">
           <label class="form-label">Email or USN</label>
@@ -533,14 +537,8 @@
               <div class="form-group">
                 <label class="form-label">Semester</label>
                 <select class="form-select" id="settingsSemester">
-                  <option value="1">Semester 1</option>
-                  <option value="2">Semester 2</option>
                   <option value="3">Semester 3</option>
                   <option value="4">Semester 4</option>
-                  <option value="5">Semester 5</option>
-                  <option value="6">Semester 6</option>
-                  <option value="7">Semester 7</option>
-                  <option value="8">Semester 8</option>
                 </select>
               </div>
               <button type="submit" class="btn btn-primary btn-full">Update Profile</button>

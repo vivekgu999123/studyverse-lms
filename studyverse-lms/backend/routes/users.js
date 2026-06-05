@@ -47,15 +47,18 @@ router.get('/:id', ...adminOrTeam, async (req, res) => {
 
 // PATCH /api/users/:id  — update status / semester / role
 router.patch('/:id', ...adminOnly, async (req, res) => {
-  const allowed = ['status', 'semester', 'role', 'name', 'username', 'department'];
+  const allowed = ['status', 'semester', 'role', 'name', 'username'];
   const updates = {};
   allowed.forEach(k => { if (req.body[k] !== undefined) updates[k] = req.body[k]; });
+  if (updates.semester !== undefined && ![3, 4].includes(Number(updates.semester))) {
+    return res.status(400).json({ success: false, message: 'Only semester 3 and 4 are supported.' });
+  }
   try {
     const target = await User.findById(req.params.id);
     if (!target) return res.status(404).json({ success: false, message: 'User not found.' });
     if (target.role === 'admin' && req.user._id.toString() !== target._id.toString())
       return res.status(403).json({ success: false, message: 'Cannot modify another admin.' });
-    const user = await User.findByIdAndUpdate(req.params.id, updates, { new: true }).select('-password');
+    const user = await User.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true }).select('-password');
     await logAction({ actionType: 'USER_UPDATED', performedBy: req.user._id, performedByName: req.user.name, targetId: user._id, targetLabel: user.email, details: JSON.stringify(updates) });
     res.json({ success: true, user });
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
